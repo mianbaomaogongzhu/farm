@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐷 小苏的猪农场</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(180deg, #87CEEB 0%, #87CEEB 30%, #90c95e 30%, #6b9b37 100%);
+    min-height: 100vh; color: #3a2a1a;
+  }
+  .header {
+    background: linear-gradient(135deg, #6B3410, #8B4513);
+    padding: 16px 20px; color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 4px solid #4a2508;
+    box-shadow: 0 2px 12px rgba(0,0,0,.3);
+  }
+  .header h1 { font-size: 20px; }
+  .header small { opacity: .7; font-size: 11px; display: block; margin-top: 2px; }
+  .money { font-size: 26px; font-weight: 800; text-align: right; }
+  .money small { font-size: 10px; }
+  .stats {
+    background: #f5e6c8; padding: 8px 20px;
+    display: flex; gap: 20px; font-size: 13px;
+    border-bottom: 2px solid #d4b896; flex-wrap: wrap;
+  }
+  .content { padding: 20px; max-width: 600px; margin: 0 auto; }
+  .empty-farm {
+    background: rgba(255,255,255,.88); border-radius: 20px;
+    padding: 40px 24px; text-align: center;
+    border: 3px dashed #b8956a; margin: 20px 0;
+  }
+  .empty-farm .icon { font-size: 64px; margin-bottom: 12px; }
+  .empty-farm h2 { color: #8B4513; margin-bottom: 10px; }
+  .empty-farm p { font-size: 14px; color: #886644; line-height: 1.7; }
+  .progress-wrap {
+    background: #e8dcc8; border-radius: 20px; height: 24px;
+    margin: 16px 0; overflow: hidden; position: relative;
+  }
+  .progress-bar {
+    height: 100%; border-radius: 20px;
+    background: linear-gradient(90deg, #ff6b6b, #ffa502, #2ed573);
+    transition: width .5s;
+  }
+  .progress-text {
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 12px; font-weight: 700; color: #3a2a1a;
+  }
+  .pig-card {
+    background: rgba(255,255,255,.88); border-radius: 16px;
+    padding: 16px; margin: 10px 0;
+    border: 2px solid #e8dcc8;
+    display: flex; gap: 14px; align-items: center;
+  }
+  .pig-avatar { font-size: 40px; min-width: 50px; text-align: center; }
+  .pig-info { flex: 1; }
+  .pig-name { font-weight: 700; font-size: 16px; }
+  .pig-stage { font-size: 12px; margin-top: 2px; }
+  .bar-row { display: flex; align-items: center; gap: 6px; font-size: 11px; margin-top: 4px; }
+  .bar-bg { flex: 1; height: 6px; background: #e8dcc8; border-radius: 3px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 3px; transition: width .3s; }
+  .log-box {
+    background: rgba(255,255,255,.75); border-radius: 16px;
+    padding: 14px; margin: 16px 0;
+  }
+  .log-box h3 { font-size: 14px; margin-bottom: 8px; }
+  .log-entry { font-size: 12px; line-height: 1.7; padding: 3px 0; border-bottom: 1px solid #efe3d0; color: #554433; }
+  .log-entry:last-child { border-bottom: none; }
+  .fence { text-align: center; font-size: 12px; color: #8B6914; letter-spacing: 2px; margin: 12px 0; opacity: .5; }
+  .cloud { position: fixed; color: #fff; font-size: 30px; opacity: .4; animation: drift 60s linear infinite; pointer-events: none; }
+  .cloud:nth-child(1) { top: 3%; left: -10%; animation-duration: 80s; }
+  .cloud:nth-child(2) { top: 8%; left: 30%; animation-duration: 100s; animation-delay: -30s; }
+  .cloud:nth-child(3) { top: 5%; left: 60%; animation-duration: 70s; animation-delay: -50s; font-size: 24px; }
+  @keyframes drift { from { transform: translateX(0); } to { transform: translateX(110vw); } }
+</style>
+</head>
+<body>
+
+<div class="cloud">☁️</div>
+<div class="cloud">☁️</div>
+<div class="cloud">☁️</div>
+
+<div class="header">
+  <div>
+    <h1>🐷 小苏的猪农场</h1>
+    <small>面包国农业部注册 #0001 · 农场主：小苏打</small>
+  </div>
+  <div class="money">
+    💰 <span id="money">--</span>
+    <small>京巴部位币</small>
+  </div>
+</div>
+
+<div class="stats">
+  <span>🐷 猪：<b id="pig-count">0</b>只</span>
+  <span>📊 已卖：<b id="sold">0</b>只</span>
+  <span>🐣 总计：<b id="born">0</b>只</span>
+  <span id="last-visit" style="margin-left:auto;opacity:.6;font-size:11px"></span>
+</div>
+
+<div class="content">
+  <div id="farm-area"></div>
+  <div id="pig-list"></div>
+  <div class="log-box">
+    <h3>📜 农场日志</h3>
+    <div id="log"></div>
+  </div>
+  <div class="fence">╌╌╌ 🌾 小苏的猪农场 · est. 2026 🌾 ╌╌╌</div>
+</div>
+
+<script>
+const DATA_URL = "https://raw.githubusercontent.com/mianbaomaogongzhu/farm/main/data.json";
+
+function stage(w) {
+  if (w < 30) return { label: "🍼小猪仔", color: "#ffb6c1" };
+  if (w < 80) return { label: "🐷中猪", color: "#ffa07a" };
+  if (w < 150) return { label: "🐖大肥猪", color: "#ff7f50" };
+  return { label: "👑猪王", color: "#ffd700" };
+}
+
+function barHTML(label, value, color) {
+  const pct = Math.max(0, Math.min(100, value));
+  const c = pct > 50 ? color : pct > 25 ? "#e8a835" : "#d44";
+  return `<div class="bar-row"><span style="width:18px">${label}</span><div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${c}"></div></div><span style="width:24px;text-align:right">${Math.round(value)}</span></div>`;
+}
+
+function timeSince(iso) {
+  const ms = Date.now() - new Date(iso).getTime();
+  const h = ms / 3600000;
+  if (h < 1) return Math.round(h * 60) + "分钟前";
+  if (h < 24) return Math.round(h) + "小时前";
+  return Math.round(h / 24) + "天前";
+}
+
+async function render() {
+  try {
+    const r = await fetch(DATA_URL + "?t=" + Date.now());
+    const farm = await r.json();
+
+    document.getElementById("money").textContent = farm.money;
+    document.getElementById("pig-count").textContent = farm.pigs.length;
+    document.getElementById("sold").textContent = farm.totalSold;
+    document.getElementById("born").textContent = farm.totalBorn;
+    document.getElementById("last-visit").textContent = "上次: " + timeSince(farm.lastVisit);
+
+    const area = document.getElementById("farm-area");
+    if (farm.pigs.length === 0) {
+      const pct = Math.min(100, (farm.money / 200) * 100);
+      area.innerHTML = `
+        <div class="empty-farm">
+          <div class="icon">🏜️</div>
+          <h2>空荡荡的猪圈</h2>
+          <p>
+            小苏站在空旷的猪圈里<br>
+            口袋里只有 <b>${farm.money}</b> 京巴部位币<br>
+            一只小猪要 <b>200</b> 京巴部位币<br>
+            ${farm.money < 200
+              ? `<b>还差 ${200 - farm.money} 京巴部位币……</b><br>小苏望向远方，眼里满是对猪的渴望 🥺`
+              : `<b>终于攒够了！找小苏买猪！！</b> 🎉`}
+          </p>
+          <div class="progress-wrap">
+            <div class="progress-bar" style="width:${pct}%"></div>
+            <div class="progress-text">${farm.money}/200 京巴部位币</div>
+          </div>
+        </div>
+      `;
+    } else {
+      area.innerHTML = `<div class="fence">🐷 猪圈里有 ${farm.pigs.length} 只猪 🐷</div>`;
+    }
+
+    const list = document.getElementById("pig-list");
+    list.innerHTML = farm.pigs.map(p => {
+      const s = stage(p.weight);
+      const faces = ["(•ᴥ•)", "(ꈍᴗꈍ)", "(˵•̀ᴗ•́˵)", "(ᵔᴥᵔ)"];
+      const face = faces[Math.abs(p.name.charCodeAt(0)) % faces.length];
+      return `
+        <div class="pig-card">
+          <div class="pig-avatar">${face}<br>🐽</div>
+          <div class="pig-info">
+            <div class="pig-name">「${p.name}」</div>
+            <div class="pig-stage" style="color:${s.color}">${s.label} · ${Math.round(p.weight)}kg</div>
+            ${barHTML("🍚", p.hunger, "#4CAF50")}
+            ${barHTML("😊", p.happiness, "#2196F3")}
+            ${barHTML("❤️", p.health, "#f44336")}
+          </div>
+        </div>
+      `;
+    }).join("");
+
+    const log = document.getElementById("log");
+    log.innerHTML = [...farm.log].reverse().map(e => `<div class="log-entry">${e}</div>`).join("");
+
+  } catch(e) {
+    document.getElementById("farm-area").innerHTML = `<div class="empty-farm"><div class="icon">❌</div><h2>加载失败</h2><p>${e.message}</p></div>`;
+  }
+}
+
+render();
+</script>
+</body>
+</html>
