@@ -41,6 +41,12 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(180d
 .grave-box h3{font-size:13px;margin-bottom:6px;color:#636e72}
 .grave-entry{font-size:11px;line-height:1.6;padding:4px 0;border-bottom:1px solid rgba(0,0,0,.08);color:#555}
 .grave-entry:last-child{border-bottom:none}
+.diary-box{background:rgba(255,248,240,.9);border-radius:14px;padding:12px;margin:14px 0;border:2px solid #d4a574}
+.diary-box h3{font-size:13px;margin-bottom:8px;color:#8B4513}
+.diary-e{font-size:12px;line-height:1.7;padding:8px 0;border-bottom:1px solid #efe3d0;color:#554433}
+.diary-e:last-child{border-bottom:none}
+.diary-date{font-size:10px;color:#b8860b;font-weight:600;margin-bottom:2px}
+.diary-text{font-style:italic}
 .fence{text-align:center;font-size:11px;color:#8B6914;letter-spacing:2px;margin:10px 0;opacity:.5}
 .warning{background:#fff3cd;border:2px solid #ffc107;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:12px;text-align:center}
 .danger{background:#f8d7da;border:2px solid #dc3545;border-radius:12px;padding:10px 14px;margin:8px 0;font-size:12px;text-align:center}
@@ -63,6 +69,7 @@ body{font-family:'Segoe UI',system-ui,sans-serif;background:linear-gradient(180d
   <div id="farm-area"></div>
   <div id="pig-list"></div>
   <div class="log-box"><h3>📜 农场日志</h3><div id="log"></div></div>
+  <div id="diary"></div>
   <div id="graveyard"></div>
   <div class="fence">╌╌╌ 🌾 小苏的猪农场 · est. 2026 🌾 ╌╌╌</div>
 </div>
@@ -147,7 +154,14 @@ async function render(){try{
 
   document.getElementById("log").innerHTML=[...farm.log].reverse().map(e=>`<div class="log-e">${e}</div>`).join("");
 
-  // Graveyard
+  
+    // Diary
+    const diary=farm.diary||[];
+    if(diary.length>0){document.getElementById("diary").innerHTML=`<div class="diary-box">
+      <h3>📔 小苏的养猪日记</h3>
+      ${[...diary].reverse().map(d=>`<div class="diary-e"><div class="diary-date">${d.date}</div><div class="diary-text">${d.entry}</div></div>`).join("")}</div>`}
+
+    // Graveyard
   const allDead=[...gy,...dead.map(p=>({name:p.name,personality:p.personality||"?",sex:p.sex||"?",
     deathTime:"(刚死)",causeOfDeath:"待小苏确认",maxWeight:Math.round(p.weight)}))];
   if(allDead.length>0){document.getElementById("graveyard").innerHTML=`<div class="grave-box">
