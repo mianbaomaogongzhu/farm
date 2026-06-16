@@ -97,18 +97,19 @@ function sim(pig,hours){
     if(p.plague){let r=p.vaccinated?HP2:HP5;if(p.personality==="抗病")r/=2;p.health=Math.max(0,p.health-p2*r)}}
   p.dead=p.health<=0;return p}
 
-function fmt(iso){let h=(Date.now()-new Date(iso).getTime())/36e5;
+function nd(s){return new Date(/[Z]$|[+-]\d\d:?\d\d$/.test(s)?s:s+'Z');}
+function fmt(iso){let h=(Date.now()-nd(iso).getTime())/36e5;
   if(h<.05)return"刚刚";if(h<1)return Math.round(h*60)+"分钟前";
   if(h<24)return Math.round(h)+"小时前";return Math.round(h/24)+"天"+Math.round(h%24)+"小时前"}
 
 function bar(l,v,c){let p=Math.max(0,Math.min(100,v)),cl=p>50?c:p>25?"#e8a835":"#d44";
   return`<div class="br"><span style="width:18px">${l}</span><div class="br-bg"><div class="br-fill" style="width:${p}%;background:${cl}"></div></div><span style="width:28px;text-align:right">${Math.round(v)}</span></div>`}
 
-function days(iso){return Math.round((Date.now()-new Date(iso).getTime())/864e5)}
+function days(iso){return Math.round((Date.now()-nd(iso).getTime())/864e5)}
 
 async function render(){try{
   const r=await fetch(DATA_URL+"?t="+Date.now()),farm=await r.json();
-  const hours=(Date.now()-new Date(farm.lastVisit).getTime())/36e5;
+  const hours=(Date.now()-nd(farm.lastVisit).getTime())/36e5;
   const sp=farm.pigs.map(p=>sim(p,hours)),alive=sp.filter(p=>!p.dead),dead=sp.filter(p=>p.dead);
   const gy=farm.graveyard||[];
 
